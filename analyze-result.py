@@ -51,28 +51,37 @@ with open(args.inputfile) as fp:
             for rr in auth:
                 # if we found a lying NSEC chain we don't parse any other NSEC record
                 if rr["type"] == "NSEC" and not is_lying_nsec:
-                    nsec_name = rr["name"].lower()
+                    # zdns omits 'name' if empty. final dot is omitted in zdns output.
+                    # thus this case typically applies ot the name '.'
+                    if "name" in rr:
+                        nsec_name = rr["name"].lower()
                     nsec_nextname = rr["next_domain"].lower()
-                    if nsec_name == nsec_nextname:
+                    if nsec_name != "" and nsec_name == nsec_nextname:
                         is_lying_nsec = True
                         nsec_count += 1
                 # if we found a lying NSEC3 chain we don't parse any other NSEC3 record
                 if rr["type"] == "NSEC3" and not is_lying_nsec:
-                    nsec_name = rr["name"].lower()
+                    # zdns omits 'name' if empty. final dot is omitted in zdns output.
+                    # thus this case typically applies ot the name '.'
+                    if "name" in rr:
+                        nsec_name = rr["name"].lower()
                     nsec_nextname = rr["next_domain"].lower()
-                    if nsec_name.startswith(nsec_nextname):
+                    if nsec_name != "" and nsec_name.startswith(nsec_nextname):
                         is_lying_nsec = True
                         is_nsec3 = True
                 if rr["type"] == "SOA":
                     ns = rr["ns"].lower()
                     mbox = rr["mbox"].lower()
-                    zonecut = rr["name"].lower()
+                    # zdns omits 'name' if empty. final dot is omitted in zdns output.
+                    # thus this case typically applies ot the name '.'
+                    if "name" in rr:
+                        zonecut = rr["name"].lower()
                 if rr["type"] == "RRSIG":
                     rrsig_inception = rr["inception"]
 
-            # Revert lying boolean as test domain and zonecut is not the same
+            # Revert lying boolean if domain and zonecut is not the same
             # This likely means www is delegated and it is possible that no
-            # other hostname beside www exist in this subzone.
+            # other hostname beside www exist in this www-subzone.
             if domain != zonecut:
                 is_lying_nsec = False
             
