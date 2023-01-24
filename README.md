@@ -81,11 +81,12 @@ Run Measurement
 Usage:
 
 ```bash
-Usage: ./run-survey.sh [-n <name-server>] <prefix>
+Usage: ./run-survey.sh [-n <name-server>] [-t threads] <prefix>
      <prefix>          prefix name for input- and output files e.g. XXX-domainlist.txt
 
  optional arguments:
-     -n <name-server>  list of name servers to use. can be passed as comma-delimited string. optional port can be specified, default 192.168.2.1:53,1.1.1.1:53
+     -n <name-server>  list of name servers to use. can be passed as comma-delimited string. optional port can be specified, default 1.1.1.1:53
+     -t <threads>      set the number of zdns threads, default 256
 ```
 
 To start the measurement run the following command:
