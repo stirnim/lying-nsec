@@ -5,17 +5,21 @@ nameserver="1.1.1.1:53"
 # zdns uses 1000 threads by default, this causes many servfails or timeouts for me.
 threads="256"
 
-while getopts "hvn:" flag; do
+while getopts "hvn:t:" flag; do
     case "${flag}" in
         n)
             nameserver="$OPTARG"
             ;;
+        t)
+            threads="$OPTARG"
+            ;;
         h)
-            echo "Usage: $0 [-n <name-server>] <prefix>"
+            echo "Usage: $0 [-n <name-server>] [-t threads] <prefix>"
             echo "     <prefix>          prefix name for input- and output files e.g. XXX-domainlist.txt"
             echo ""
             echo " optional arguments:"
             echo "     -n <name-server>  list of name servers to use. can be passed as comma-delimited string. optional port can be specified, default $nameserver"
+            echo "     -t <threads>      set the number of zdns threads, default $threads"
             exit 0
             ;;
         \?) echo "Invalid Option: -$OPTARG" 1>&2
