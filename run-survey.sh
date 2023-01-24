@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # defaults
-nameserver="192.168.2.1:53,1.1.1.1:53"
+nameserver="1.1.1.1:53"
 # zdns uses 1000 threads by default, this causes many servfails or timeouts for me.
 threads="256"
 
