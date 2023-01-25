@@ -47,9 +47,6 @@ Dependencies for the scripts:
  * python3 - https://www.python.org/
  * go - https://go.dev/
  * zdns - https://github.com/zmap/zdns
-
-Recommended tools to filter result files:
-
  * jq - https://stedolan.github.io/jq/
 
 There is a helper script to build and install ZDNS to `go/bin/zdns`:
@@ -58,11 +55,11 @@ There is a helper script to build and install ZDNS to `go/bin/zdns`:
 utils/install-zdns.sh
 ```
 
+
 Usage
 =====
 
-Domain List
------------
+Domain List:
 
 You need to create a list of domains to test. If you test all DNSSEC signed domains from a TLD zone
 you can create a list of DNSSEC signed domains as following:
@@ -73,10 +70,6 @@ cat li.txt | utils/extract-signed-domain.sh > li-domainlist.txt
 ```
 
 More information about the public TLD zone access from SWITCH at https://zonedata.switch.ch/
-
-
-Run Measurement
----------------
 
 Usage:
 
@@ -89,25 +82,50 @@ Usage: ./run-survey.sh [-n <name-server>] [-t threads] <prefix>
      -t <threads>      set the number of zdns threads, default 256
 ```
 
+If you run the measurement to aggressive (high number of threads) it likely results in some TIMEOUT or SERVFAIL responses.
+Check the ZDNS output files and reduce the number of threads until the target name-servers can handle it.
+
+
 To start the measurement run the following command:
 
 ```bash
 ./run-survey.sh li
 ```
 
-Description of the measurement:
+With the `li` script argument, the script will test all domains in the file `li-domainlist.txt`.
+There are two ZDNS measurements executed. The first ZDNS run checks all domain names by appending the "www."
+prefix and by querying for the A record e.g. input:`mydomain.li`, lookup:`www.mydomain.li/A`.
+The ZDNS output is written to `li-www.jsonlines`. A list of domain names where the www hostname
+exists (NOERROR response) is written to `li-www-domainlist.txt`.
+The second ZDNS run checks the domain names in `li-www-domainlist.txt` by querying for the NULL record.
+This is expected to trigger a NODATA response. e.g. input: `mydomain.li`, lookup:`mydomain.li/NULL`.
+The ZDNS output is written to `li-nodata.jsonlines`.
 
-The `run-survey.sh` script runs one ZDNS measurement. It checks all domain names listed in the `li-domainlist.txt`
-by appending the "www." prefix and querying for the NULL record. The ZDNS output is written to `li-nodata.jsonlines`.
+After the measurement is done, the `analyze-result.py` script is started which analyses the last
+output file and prints a summary with statistics to stdout and writes a list of jsonlines with 
+affected domains to `li-lying.jsonlines`.
 
-The `run-survey.sh` script starts the `analyze-result.py` script for you.
-The `analyze-result.py` script does no measurements but analyzes the result file and prints a summary with
-statistics to stdout and writes a list of affected domains to `li-lying.jsonlines`.
-
-You can filter the final result with `jq` further. For example, if you want a list of affected domains by operator XYZ
-then run a command similar as following:
+You can filter the final result with `jq` further. For example, if you want a list of affected
+domains by operator XYZ then run a command similar as following:
 
 ```bash
 cat li-lying.jsonlines | jq -r 'select(.soa_ns | contains("XYZ")) | .name' | sort > XYZ.txt
 ```
+
+
+Measurement Notes
+=================
+
+Ultimatively we want to get a NODATA response with a proof denying the existance of the www hostname but where it
+exists. If we would run the measurement with only one ZDNS measurement where we lookup  `www.<domain>/NULL` we risk
+that the recursive resolver synthesizes the response and we fail to detect the error condition. Even if we use a
+recursive resolver where aggressive use of DNSSEC-validated cache (rfc8198) is disabled, a single query as shown 
+bevore may fail DNSSEC validation (SERVFAIL response).
+
+I found the implemented work-around with two measurements yealds a good result. So, the script first tests
+`www.<domain>/A` and if that exists, it follows up with `<domain>/NULL`.
+
+In theory, it could report false positives e.g. if the domain is using NSEC3 opt-out and www is an unsigned delegation.
+As NSEC3 opt-out is extremely rarely used outside delegation centric zones such as TLDs it is very unlikely that
+we trigger this condition.
 
