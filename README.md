@@ -1,8 +1,8 @@
 Lying NSEC, NSEC3
 =================
 
-This scripts detect domain names with a NSEC or NSEC3 record denying the existence
-of the www hostname but where it exists. The NSEC or NSEC3 records have a valid RRSIG.
+Scripts to detect domain names with a NSEC or NSEC3 record denying the existence
+of a www hostname but where it exists. The NSEC or NSEC3 records have a valid RRSIG.
 
 Note: https://dnsviz.net/ does not identify this lying NSEC, NSEC3 records yet.
 See issue https://github.com/dnsviz/dnsviz/issues/114.
