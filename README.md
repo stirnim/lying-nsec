@@ -61,7 +61,7 @@ Usage
 
 Domain List:
 
-You need to create a list of domains to test. If you test all DNSSEC signed domains from a TLD zone
+First, you need to create a list of domains to test. If you test all DNSSEC signed domains from a TLD zone
 you can create a list of DNSSEC signed domains as following:
 
 ```bash
@@ -93,7 +93,7 @@ To start the measurement run the following command:
 ```
 
 With the `li` script argument, the script will test all domains in the file `li-domainlist.txt`.
-There are two ZDNS measurements executed. The first ZDNS run checks all domain names by appending the "www."
+There are two ZDNS measurements executed. The first ZDNS run checks all domain names by appending the `www.`
 prefix and by querying for the A record e.g. input:`mydomain.li`, lookup:`www.mydomain.li/A`.
 The ZDNS output is written to `li-www.jsonlines`. A list of domain names where the www hostname
 exists (NOERROR response) is written to `li-www-domainlist.txt`.
@@ -116,7 +116,7 @@ cat li-lying.jsonlines | jq -r 'select(.soa_ns | contains("XYZ")) | .name' | sor
 Measurement Notes
 =================
 
-Ultimatively we want to get a NODATA response with a proof denying the existance of the www hostname but where it
+We want to get a NODATA response with a proof denying the existance of the www hostname but where it
 exists. If we would run the measurement with only one ZDNS measurement where we lookup  `www.<domain>/NULL` we risk
 that the recursive resolver synthesizes the response and we fail to detect the error condition. Even if we use a
 recursive resolver where aggressive use of DNSSEC-validated cache (rfc8198) is disabled, a single query as shown 
