@@ -45,6 +45,8 @@ with open(args.inputfile) as fp:
                 continue
 
             domain = data["name"].lower()
+            if domain.endswith('.'):
+                domain=domain[:-1]
 
             # parse NODATA response (authority section)
             auth = data["data"]["authorities"]
